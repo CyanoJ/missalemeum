@@ -2,15 +2,14 @@ import datetime
 from icalendar import Calendar, Event
 from typing import Dict
 
-from kalendar.models import Day
+from .kalendar.models import Day
 
 
 class IcalBuilder:
-
     @staticmethod
     def build(days: Dict[datetime.date, Day], rank: int, lang: str) -> str:
         cal = Calendar()
-        cal.add('version', '2.0')
+        cal.add("version", "2.0")
         cal.add("prodid", "-//Missale Meum - Calendar//missalemeum.com//")
         for datetime_, day in days.items():
             celebration = day.celebration[0] if day.celebration else day.tempora[0] if day.tempora else None

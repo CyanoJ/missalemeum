@@ -8,15 +8,26 @@ from typing import List, Union, Pattern
 import mistune
 import yaml
 
-from constants.common import CUSTOM_PREFACES, PROPERS_DIR, SUPPLEMENT_DIR, PATTERN_PRE_LENTEN, PATTERN_LENT, TRACTUS, \
-    SANCTI_02_02, GRADUALE, SUPPLEMENT_DIR_V4
-from exceptions import SupplementNotFound
+from .constants.common import (
+    CUSTOM_PREFACES,
+    PROPERS_DIR,
+    SUPPLEMENT_DIR,
+    PATTERN_PRE_LENTEN,
+    PATTERN_LENT,
+    TRACTUS,
+    SANCTI_02_02,
+    GRADUALE,
+    SUPPLEMENT_DIR_V4,
+)
+from .exceptions import SupplementNotFound
 
 log = logging.getLogger(__name__)
 
 
-def match(observances: Union[str, 'Observance', List[Union[str, 'Observance']]],  # noqa: F821
-          patterns: Union[List[str], str, List[Pattern], Pattern]):
+def match(
+    observances: Union[str, "Observance", List[Union[str, "Observance"]]],  # noqa: F821
+    patterns: Union[List[str], str, List[Pattern], Pattern],
+):
     if not isinstance(observances, (list, tuple)):
         observances = [observances]
     if not isinstance(patterns, (list, tuple)):
@@ -28,7 +39,7 @@ def match(observances: Union[str, 'Observance', List[Union[str, 'Observance']]],
                 return observance
 
 
-def get_custom_preface(celebration: 'Observance', tempora: 'Observance' = None) -> Union[str, None]:  # noqa: F821
+def get_custom_preface(celebration: "Observance", tempora: "Observance" = None) -> Union[str, None]:  # noqa: F821
     for pattern, preface_name in CUSTOM_PREFACES:
         if (re.match(pattern, celebration.id)) or (tempora and celebration.rank > 1 and re.match(pattern, tempora.id)):
             return preface_name
@@ -49,12 +60,9 @@ def format_propers(propers, day=None):
             "rank": propers_vernacular.rank,
             "colors": propers_vernacular.colors,
             "supplements": propers_vernacular.supplements,
-            "date": day.date.strftime("%Y-%m-%d") if day else None
+            "date": day.date.strftime("%Y-%m-%d") if day else None,
         }
-        retvals.append({
-            "info": info,
-            "sections": format_proper_sections(propers_vernacular, propers_latin)
-        })
+        retvals.append({"info": info, "sections": format_proper_sections(propers_vernacular, propers_latin)})
     return retvals
 
 
@@ -66,7 +74,7 @@ def format_proper_sections(propers_vernacular, propers_latin):
         try:
             section["body"] = [[section["body"], pl[section["id"]]]]
         except KeyError:
-            log.warning(f"Section `%s` not found in latin proper `%s`.", section['id'], propers_latin.id)
+            log.warning(f"Section `%s` not found in latin proper `%s`.", section["id"], propers_latin.id)
         else:
             result.append(section)
     return result
@@ -83,8 +91,8 @@ def get_pregenerated_proper(lang, proper_id, tempora_id=None):
                 # Candlemass is the only pre-generated proper for which the gradual/tract differs
                 # depending on liturgical period, hence this hack
                 section_to_del = GRADUALE if match(tempora_id, [PATTERN_PRE_LENTEN, PATTERN_LENT]) else TRACTUS
-                idx_to_del = [i for i, j in enumerate(proper[0]['sections']) if j['id'] == section_to_del][0]
-                del proper[0]['sections'][idx_to_del]
+                idx_to_del = [i for i, j in enumerate(proper[0]["sections"]) if j["id"] == section_to_del][0]
+                del proper[0]["sections"][idx_to_del]
             return proper
 
 
@@ -96,7 +104,7 @@ def get_supplement(lang, resource, subdir=None):
         path_args.append(f"{resource}.yaml")
         with open(os.path.join(*path_args)) as fh:
             content = yaml.full_load(fh)
-            content["body"] = mistune.markdown(content["body"], escape=False, plugins=['table'])
+            content["body"] = mistune.markdown(content["body"], escape=False, plugins=["table"])
             return content
     except IOError:
         raise SupplementNotFound(f"{subdir}/{resource}")
@@ -144,13 +152,11 @@ class SupplementIndex:
             finally:
                 for filename in sorted(filenames):
                     if filename.endswith(".yaml"):
-                        resource_id = filename.rsplit('.', 1)[0]
+                        resource_id = filename.rsplit(".", 1)[0]
                         index_item = get_supplement(lang, resource_id, subdir)
                         self.index[key].append(
-                            {"title": index_item["title"],
-                             "ref": f"{subdir}/{resource_id}",
-                             "tags": index_item["tags"]
-                             })
+                            {"title": index_item["title"], "ref": f"{subdir}/{resource_id}", "tags": index_item["tags"]}
+                        )
         return self.index[key]
 
     def _get_title(self, lang, subdir, proper_id):
@@ -173,13 +179,15 @@ class SupplementIndexV4(SupplementIndex):
             finally:
                 for filename in sorted(filenames):
                     if filename.endswith(".json"):
-                        resource_id = filename.rsplit('.', 1)[0]
+                        resource_id = filename.rsplit(".", 1)[0]
                         index_item = get_supplement_v4(lang, resource_id, subdir)
                         self.index[key].append(
-                            {"title": index_item[0]["info"]["title"],
-                             "id": resource_id,
-                             "tags": index_item[0]["info"]["additional_info"]
-                             })
+                            {
+                                "title": index_item[0]["info"]["title"],
+                                "id": resource_id,
+                                "tags": index_item[0]["info"]["additional_info"],
+                            }
+                        )
         return self.index[key]
 
 

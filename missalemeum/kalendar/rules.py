@@ -18,7 +18,7 @@ from copy import copy
 from datetime import date, timedelta
 from typing import List
 
-from constants.common import (TEMPORA_C_10A, TEMPORA_C_10B, TEMPORA_C_10C, TEMPORA_C_10PASC, TEMPORA_C_10T,
+from ..constants.common import (TEMPORA_C_10A, TEMPORA_C_10B, TEMPORA_C_10C, TEMPORA_C_10PASC, TEMPORA_C_10T,
                               EMBER_DAYS,
                               FEASTS_OF_JESUS_CLASS_1_AND_2, PATTERN_ADVENT,
                               PATTERN_CLASS_1, PATTERN_EASTER,
@@ -34,8 +34,8 @@ from constants.common import (TEMPORA_C_10A, TEMPORA_C_10B, TEMPORA_C_10C, TEMPO
                               TEMPORA_QUAD6_6, TEMPORA_QUADP3_3,
                               SANCTI_09_29, PATTERN_SANCTI_CLASS_4, PATTERN_LENT, PATTERN_SANCTI, SUNDAY,
                               PATTERN_TEMPORA_CLASS_4)
-from kalendar.models import Calendar, Observance
-from utils import match
+from ..kalendar.models import Calendar, Observance
+from ..utils import match
 
 
 def rule_nativity_has_multiple_masses(

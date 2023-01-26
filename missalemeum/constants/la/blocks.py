@@ -1,6 +1,6 @@
 import itertools
 
-from constants import common as constants
+from ...constants import common as constants
 
 POST_EPIPHANY = (
     (constants.TEMPORA_EPI1_0,),
@@ -377,25 +377,15 @@ ADVENT = (
     (constants.TEMPORA_ADV4_5,),
 )
 
-NATIVITY_OCTAVE_SUNDAY = (
-    (constants.TEMPORA_NAT1_0,),
-)
+NATIVITY_OCTAVE_SUNDAY = ((constants.TEMPORA_NAT1_0,),)
 
-NATIVITY_OCTAVE_FERIA = (
-    (constants.TEMPORA_NAT1_1,),
-)
+NATIVITY_OCTAVE_FERIA = ((constants.TEMPORA_NAT1_1,),)
 
-HOLY_NAME = (
-    (constants.TEMPORA_NAT2_0,),
-)
+HOLY_NAME = ((constants.TEMPORA_NAT2_0,),)
 
-CHRIST_KING = (
-    (constants.SANCTI_10_DU,),
-)
+CHRIST_KING = ((constants.SANCTI_10_DU,),)
 
-SUNDAY_IN_CHRISTMAS_OCTAVE = (
-    (constants.TEMPORA_NAT1_0,),
-)
+SUNDAY_IN_CHRISTMAS_OCTAVE = ((constants.TEMPORA_NAT1_0,),)
 
 SANCTI = (
     constants.SANCTI_01_01,
@@ -671,14 +661,18 @@ SANCTI = (
     constants.SANCTI_12_31,
 )
 
-TEMPORA_IDS = list(itertools.chain.from_iterable(POST_EPIPHANY +
-                                                 FROM_PRE_LENT_TO_POST_PENTECOST +
-                                                 EMBER_DAYS_SEPTEMBER +
-                                                 WEEK_24_AFTER_PENTECOST +
-                                                 ADVENT +
-                                                 NATIVITY_OCTAVE_SUNDAY +
-                                                 NATIVITY_OCTAVE_FERIA +
-                                                 HOLY_NAME +
-                                                 CHRIST_KING +
-                                                 SUNDAY_IN_CHRISTMAS_OCTAVE))
+TEMPORA_IDS = list(
+    itertools.chain.from_iterable(
+        POST_EPIPHANY
+        + FROM_PRE_LENT_TO_POST_PENTECOST
+        + EMBER_DAYS_SEPTEMBER
+        + WEEK_24_AFTER_PENTECOST
+        + ADVENT
+        + NATIVITY_OCTAVE_SUNDAY
+        + NATIVITY_OCTAVE_FERIA
+        + HOLY_NAME
+        + CHRIST_KING
+        + SUNDAY_IN_CHRISTMAS_OCTAVE
+    )
+)
 ALL_IDS = TEMPORA_IDS + list(SANCTI)

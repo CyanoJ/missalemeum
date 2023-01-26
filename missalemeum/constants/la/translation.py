@@ -1,6 +1,6 @@
 import re
 
-from constants import common as constants
+from ...constants import common as constants
 
 TITLES = {
     constants.FERIA: 'Feria',

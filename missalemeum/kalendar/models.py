@@ -7,21 +7,43 @@ from copy import copy
 from datetime import date, timedelta
 from typing import ItemsView, List, Tuple, Union
 
-from constants.common import (TEMPORA_C_10A, TEMPORA_C_10B, TEMPORA_C_10C, TEMPORA_C_10PASC, TEMPORA_C_10T,
-                              TABLE_OF_PRECEDENCE, TEMPORA_EPI1_0,
-                              TEMPORA_EPI1_0A, TEMPORA_PENT01_0,
-                              TEMPORA_RANK_MAP, TYPE_TEMPORA, WEEKDAY_MAPPING, PATTERN_EASTER,
-                              PATTERN_PRE_LENTEN,
-                              PATTERN_LENT, GRADUALE_PASCHAL, TRACTUS, GRADUALE,
-                              CUSTOM_INTER_READING_SECTIONS,
-                              SUNDAY, PATTERN_POST_EPIPHANY_SUNDAY, TEMPORA_PENT23_0, INTROIT, OFFERTORIUM,
-                              COMMUNIO,
-                              TEMPORA_NAT2_0, SANCTI_01_01, PREFATIO_COMMUNIS, TEMPORA_PASC5_0,
-                              TEMPORA_PASC5_4,
-                              TEMPORA_PENT01_0A, FERIA)
-from propers.models import Proper, ProperConfig
-from propers.parser import ProperParser
-from utils import get_custom_preface, match
+from ..constants.common import (
+    TEMPORA_C_10A,
+    TEMPORA_C_10B,
+    TEMPORA_C_10C,
+    TEMPORA_C_10PASC,
+    TEMPORA_C_10T,
+    TABLE_OF_PRECEDENCE,
+    TEMPORA_EPI1_0,
+    TEMPORA_EPI1_0A,
+    TEMPORA_PENT01_0,
+    TEMPORA_RANK_MAP,
+    TYPE_TEMPORA,
+    WEEKDAY_MAPPING,
+    PATTERN_EASTER,
+    PATTERN_PRE_LENTEN,
+    PATTERN_LENT,
+    GRADUALE_PASCHAL,
+    TRACTUS,
+    GRADUALE,
+    CUSTOM_INTER_READING_SECTIONS,
+    SUNDAY,
+    PATTERN_POST_EPIPHANY_SUNDAY,
+    TEMPORA_PENT23_0,
+    INTROIT,
+    OFFERTORIUM,
+    COMMUNIO,
+    TEMPORA_NAT2_0,
+    SANCTI_01_01,
+    PREFATIO_COMMUNIS,
+    TEMPORA_PASC5_0,
+    TEMPORA_PASC5_4,
+    TEMPORA_PENT01_0A,
+    FERIA,
+)
+from ..propers.models import Proper, ProperConfig
+from ..propers.parser import ProperParser
+from ..utils import get_custom_preface, match
 
 log = logging.getLogger(__name__)
 
@@ -55,7 +77,7 @@ class Observance:
     lang = None
 
     def __init__(self, observance_id: str, date_: date, lang: str):
-        """ Build an Observance out of identifier and calendar date
+        """Build an Observance out of identifier and calendar date
 
         :param observance_id: observance's identifier in format
                        <flexibility>:<identifier>:<rank>
@@ -67,22 +89,28 @@ class Observance:
         """
         self.date = date_
         self.lang = lang
-        translation = importlib.import_module(f'constants.{lang}.translation')
-        flexibility, name, rank, color = observance_id.split(':')
+        translation = importlib.import_module(f"...constants.{lang}.translation", package=__name__)
+        flexibility, name, rank, color = observance_id.split(":")
         self.flexibility: str = flexibility
         self.name: str = name
         self.rank: int = self._calc_rank(observance_id, int(rank))
         self.colors = list(color)
-        self.id: str = ':'.join((self.flexibility, self.name, str(self.rank), color))
+        self.id: str = ":".join((self.flexibility, self.name, str(self.rank), color))
         self.title: str = translation.TITLES.get(observance_id)
-        if flexibility == TYPE_TEMPORA and observance_id not in (TEMPORA_C_10A, TEMPORA_C_10B, TEMPORA_C_10C, TEMPORA_C_10PASC, TEMPORA_C_10T):
-            self.weekday = WEEKDAY_MAPPING[re.sub(r'^.*-(\d+).*$', '\\1', name)]
+        if flexibility == TYPE_TEMPORA and observance_id not in (
+            TEMPORA_C_10A,
+            TEMPORA_C_10B,
+            TEMPORA_C_10C,
+            TEMPORA_C_10PASC,
+            TEMPORA_C_10T,
+        ):
+            self.weekday = WEEKDAY_MAPPING[re.sub(r"^.*-(\d+).*$", "\\1", name)]
         else:
             self.weekday = self.date.weekday()
         self.priority = self._calc_priority()
 
-    def get_proper(self, config=None) -> Tuple['Proper', 'Proper']:
-        proper: Tuple['Proper', 'Proper'] = ProperParser(self.id, self.lang, config).parse()
+    def get_proper(self, config=None) -> Tuple["Proper", "Proper"]:
+        proper: Tuple["Proper", "Proper"] = ProperParser(self.id, self.lang, config).parse()
         if re.match(PATTERN_POST_EPIPHANY_SUNDAY, self.id) and self.date.month >= 10:
             self._adjust_sunday_shifted_from_post_epiphany(proper)
         return proper
@@ -91,7 +119,7 @@ class Observance:
         return ProperParser(self.id, self.lang).proper_exists()
 
     def serialize(self) -> dict:
-        return {'id': self.id, 'rank': self.rank, 'title': self.title, 'colors': self.colors}
+        return {"id": self.id, "rank": self.rank, "title": self.title, "colors": self.colors}
 
     def _calc_rank(self, observance_id: str, original_rank: int) -> int:
         """
@@ -100,10 +128,12 @@ class Observance:
           while other feria Advent days are 3 class;
         """
         for case in TEMPORA_RANK_MAP:
-            if self.date.month == case['month']\
-                    and self.date.day == case['day']\
-                    and re.match(case['pattern'], observance_id):
-                return case['rank']
+            if (
+                self.date.month == case["month"]
+                and self.date.day == case["day"]
+                and re.match(case["pattern"], observance_id)
+            ):
+                return case["rank"]
         return original_rank
 
     def _calc_priority(self) -> Union[None, int]:
@@ -114,8 +144,9 @@ class Observance:
             if re.match(pattern, self.id):
                 return priority
 
-    def _adjust_sunday_shifted_from_post_epiphany(self, propers: Tuple['Proper', 'Proper']) \
-            -> Tuple['Proper', 'Proper']:
+    def _adjust_sunday_shifted_from_post_epiphany(
+        self, propers: Tuple["Proper", "Proper"]
+    ) -> Tuple["Proper", "Proper"]:
         """
         When Easter is early (e.g. 2018), Pre-lent takes up some Sundays after Epiphany, which in turn
         are shifted to the end of the period after Pentecost. In such case, each shifted Sunday is modified
@@ -123,7 +154,7 @@ class Observance:
           * Introit, Gradual, Offertorium and Communio are taken from 23rd Sunday after Pentecost
           * Collect, Lectio, Evangelium and Secreta are taken from respective shifted Sunday
         """
-        proper_sunday_23_post_pentecost: Tuple['Proper', 'Proper'] = ProperParser(TEMPORA_PENT23_0, self.lang).parse()
+        proper_sunday_23_post_pentecost: Tuple["Proper", "Proper"] = ProperParser(TEMPORA_PENT23_0, self.lang).parse()
         for i, proper in enumerate(propers):
             for section in (INTROIT, GRADUALE, OFFERTORIUM, COMMUNIO):
                 proper.set_section(section, proper_sunday_23_post_pentecost[i].get_section(section))
@@ -151,19 +182,20 @@ class Observance:
 
 
 class Day:
-    """ Class used to keep `Observance` objects for particular days of Missal.
+    """Class used to keep `Observance` objects for particular days of Missal.
 
     It contains three lists: `tempora`, `celebration` and `commemoration`.
     On Missal's creation the lists are filled in so that `tempora` always contains `Observance` representing
     given variable day, `celebration` contains an `Observance`s to be celebrated in this day and
     `commemoration` contains zero or more `Observance`s that should be commemorated with the main celebration.
     """
-    calendar: 'Calendar' = None
-    tempora: List['Observance'] = None
-    celebration: List['Observance'] = None
-    commemoration: List['Observance'] = None
 
-    def __init__(self, date_: date, calendar: 'Calendar') -> None:
+    calendar: "Calendar" = None
+    tempora: List["Observance"] = None
+    celebration: List["Observance"] = None
+    commemoration: List["Observance"] = None
+
+    def __init__(self, date_: date, calendar: "Calendar") -> None:
         self.date = date_
         self.calendar = calendar
         self.tempora = []
@@ -171,7 +203,7 @@ class Day:
         self.commemoration = []
 
     @property
-    def all(self) -> List['Observance']:
+    def all(self) -> List["Observance"]:
         return self.tempora + self.celebration + self.commemoration
 
     def get_tempora_id(self) -> Union[None, str]:
@@ -194,7 +226,7 @@ class Day:
         if self.celebration:
             return self.celebration[0].colors
 
-    def get_proper(self) -> List[Tuple['Proper', 'Proper']]:
+    def get_proper(self) -> List[Tuple["Proper", "Proper"]]:
         """
         Get proper that is used in today Mass. If given day does not have a dedicated proper,
         use the one from the latest Sunday.
@@ -207,7 +239,7 @@ class Day:
                     celebration_proper[i].add_commemorations([j[i] for j in commemoration_propers])
         return celebration_propers
 
-    def _calculate_proper(self, observances: List[Observance]) -> List[Tuple['Proper', 'Proper']]:
+    def _calculate_proper(self, observances: List[Observance]) -> List[Tuple["Proper", "Proper"]]:
         """
         Accommodate propers for given observance to the current calendar day.
         For example:
@@ -280,7 +312,7 @@ class Day:
 
     def serialize(self) -> dict:
         serialized = {}
-        for container in ('tempora', 'celebration', 'commemoration'):
+        for container in ("tempora", "celebration", "commemoration"):
             serialized[container] = [i.serialize() for i in getattr(self, container)]
         return serialized
 
@@ -312,12 +344,12 @@ class Calendar:
       ...
     }
     """
+
     lang = None
     _container = None
 
     def __init__(self, year: int, lang: str) -> None:
-        """ Build a calendar and fill it in with empty `Day` objects
-        """
+        """Build a calendar and fill it in with empty `Day` objects"""
         self.lang = lang
         self._container = OrderedDict()
         self._build_empty_calendar(year)
@@ -332,7 +364,7 @@ class Calendar:
         return self._container.get(date_)
 
     def find_day(self, observance_id: str) -> Union[None, Tuple[date, Day]]:
-        """ Return a day representation by observance ID, if any
+        """Return a day representation by observance ID, if any
 
         :param observance_id: observance's identifier, for example TEMPORA_EPI6_0
         :type observance_id: string
@@ -349,5 +381,5 @@ class Calendar:
     def serialize(self) -> dict:
         serialized = {}
         for date_, day in self.items():
-            serialized[date_.strftime('%Y-%m-%d')] = day.serialize()
+            serialized[date_.strftime("%Y-%m-%d")] = day.serialize()
         return serialized

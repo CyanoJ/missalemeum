@@ -4,14 +4,15 @@ import datetime
 from functools import lru_cache
 from typing import List, Tuple
 
-import ical
-from kalendar.factory import MissalFactory
-from kalendar.models import Calendar, Day
-from propers.models import Proper, ProperConfig
-from propers.parser import ProperParser
-from utils import get_custom_preface
+from . import ical
+from .kalendar.factory import MissalFactory
+from .kalendar.models import Calendar, Day
+from .propers.models import Proper, ProperConfig
+from .propers.parser import ProperParser
+from .utils import get_custom_preface
 
-no_cache = bool(os.environ.get('MISSAL_NO_CACHE'))
+
+no_cache = bool(os.environ.get("MISSAL_NO_CACHE"))
 
 
 @lru_cache(maxsize=0 if no_cache else 64)
